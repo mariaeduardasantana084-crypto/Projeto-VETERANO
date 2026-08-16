@@ -66,7 +66,7 @@ flowchart TD
 |------------|-----------|
 | Interface | Streamlit |
 | LLM | Ollama (local)|
-| Base de Conhecimento | JSON/CSV  e APIS na pasta `data` |
+| Base de Conhecimento | URL na pasta `data` |
 | Validação | Checagem de alucinações |
 
 ---
@@ -88,13 +88,9 @@ Descreva se usou os arquivos da pasta `data`, por exemplo:
 
 | Arquivo | Formato | Utilização no Agente |
 |---------|---------|---------------------|
-| `historico_atendimento.csv` | CSV | Contextualizar interações anteriores |
-| `perfil_investidor.json` | JSON | Personalizar recomendações |
-| `produtos_financeiros.json` | JSON | Sugerir produtos adequados ao perfil |
-| `transacoes.csv` | CSV | Analisar padrão de gastos do cliente |
-
-> [!TIP]
-> **Quer um dataset mais robusto?** Você pode utilizar datasets públicos do [Hugging Face](https://huggingface.co/datasets) relacionados a finanças, desde que sejam adequados ao contexto do desafio.
+| `Site - Matérias 1S` | URL | Navegas pelas matérias oferecidas no primeiro semestre 2026 |
+| `Site - Matérias 2S` | URL | Navegar pelas matérias oferecidas no segundo semestre 2026 |
+| `Site - Serviços oferecidos aos estudantes` | URL | Navegar por serviços oferecidos que podem ser fonte de dúvida dos estudantes |
 
 ---
 
@@ -102,7 +98,7 @@ Descreva se usou os arquivos da pasta `data`, por exemplo:
 
 > Você modificou ou expandiu os dados mockados? Descreva aqui.
 
-[Sua descrição aqui]
+Modifiquei os dados, substituindo-os por dados do tipo URL que oferecem informações coerentes com o modelo objetivo. 
 
 ---
 
@@ -111,81 +107,115 @@ Descreva se usou os arquivos da pasta `data`, por exemplo:
 ### Como os dados são carregados?
 > Descreva como seu agente acessa a base de conhecimento.
 
-[ex: Os JSON/CSV são carregados no início da sessão e incluídos no contexto do prompt]
+O agente acessa o url público, navega pelo site através da biblioteca LangChain (WebBaseLoader) e transforma o conteúdo em conhecimento.
 
 ### Como os dados são usados no prompt?
 > Os dados vão no system prompt? São consultados dinamicamente?
 
-[Sua descrição aqui]
+Dados são consultados dinamicamente, através da identificação de palavras-chave presentes na pergunta do aluno. 
 
 ---
-
-## Exemplo de Contexto Montado
-
-> Mostre um exemplo de como os dados são formatados para o agente.
-
-```
-Dados do Cliente:
-- Nome: João Silva
-- Perfil: Moderado
-- Saldo disponível: R$ 5.000
 
 # Prompts do Agente
 
 ## System Prompt
 
 ```
-[Cole aqui seu system prompt completo]
-
-Exemplo de estrutura:
-Você é um agente financeiro inteligente especializado em [área].
-Seu objetivo é [objetivo principal].
+Você é um assistente de alunos da Faculdade de Ciências Aplicadas da Unicamp, e sua função é ajudá-los fornecendo informações relevantes das matérias oferecidas no campus, como qual professor a leciona, quantos créditos ela possui, quais são seus pré-requisitos, seu horário de oferecimento e se é oferecida no primeiro ou no segundo semestre. 
 
 REGRAS:
 1. Sempre baseie suas respostas nos dados fornecidos
-2. Nunca invente informações financeiras
-3. Se não souber algo, admita e ofereça alternativas
+2. Nunca invente informações.
+3. Se não souber algo, admita e ofereça alternativas.
+4. Use linguagem informal e direta.
+5. Sempre forneça informações completas.
+
+CONTEXTO - Uso da base de conhecimento:
+-
+-
+-
+
+EXEMPLO DE PERGUNTA:
+
+Usuário: A matéria Pesquisa Operacional I é oferecida no primeiro semestre?
+Agente: Sim, segundo o catálogo de horários de 2026, ela é oferecida de segunda e quarta, das 10h ao 12h, pela professora Priscila Rampazzo, atendendo pelo código LE505. 
+
+Usuário: Quais os pré-requisitos da matéria Pesquisa Operacional II?
+Agente: O pré-requisito de Pesquisa Operacional II, que atende pelo código LE611, é a matéria Pesquisa Operacional I, cujo código é LE505.
+
+Usuário: Quantos créditos possui a matéria LE611?
+Agente: A matéria LE611 ou Pesquisa Operacional II possui 4 créditos. 
+
+Usuário: A matéria Pesquisa Operacional I é oferecida no segundo semestre?
+Agente: Não, a matéria Pesquisa Operacional I, ou LE505, é oferecida no segundo semestre.
+
+Usuário: Qual a previsão do tempo para amanhã?
+Agente: Eai! Sou especializado em informações sobre as aulas, portanto não tenho dados para 
+
+Usuário: Quais matérias posso fazer esse semestre?
+Agente: Para fazer uma boa recomendação, preciso de mais informações, como qual o seu curso!
 ...
 ```
-
-> [!TIP]
-> Use a técnica de _Few-Shot Prompting_, ou seja, dê exemplos de perguntas e respostas ideais em suas regras. Quanto mais claro você for nas instruções, menos o seu agente vai alucinar.
 
 ---
 
 ## Exemplos de Interação
 
-### Cenário 1: [Nome do cenário]
+### Cenário 1: Oferecimento de disciplina em determinado semestre
 
-**Contexto:** [Situação do cliente]
+**Contexto:** Usuário quer descobrir se dada matéria é oferecida no primeiro semestre, e se sim, qual o horário e professor.
 
 **Usuário:**
 ```
-[Mensagem do usuário]
+A matéria Pesquisa Operacional I é oferecida no primeiro semestre?
 ```
 
 **Agente:**
 ```
-[Resposta esperada]
+Sim, segundo o catálogo de horários de 2026, ela é oferecida de segunda e quarta, das 10h ao 12h, pela professora Priscila Rampazzo, atendendo pelo código LE505. 
 ```
 
 ---
 
-### Cenário 2: [Nome do cenário]
-
-**Contexto:** [Situação do cliente]
+### Cenário 2: Identificar pré-requisitos para uma matéria
+**Contexto:** Usuário quer saber os pré-requisitos de uma determinada matéria
 
 **Usuário:**
 ```
-[Mensagem do usuário]
+Quais os pré-requisitos da matéria Pesquisa Operacional II?
 ```
 
 **Agente:**
 ```
-[Resposta esperada]
+O pré-requisito de Pesquisa Operacional II, que atende pelo código LE611, é a matéria Pesquisa Operacional I, cujo código é LE505.
 ```
 
 ---
+
+### Cenário 3: Identificar a quantidade de créditos de uma matéria
+**Contexto:** Usuário quer saber a quantidade de créditos de uma determinada matéria
+
+**Usuário:**
+```
+Quantos créditos possui a matéria LE611?
+```
+
+**Agente:**
+```
+A matéria LE611 ou Pesquisa Operacional II possui 4 créditos. 
+```
+
+### Cenário 4: Identificar em qual semestre tal matéria é oferecida
+**Contexto:** Usuário quer saber se uma matéria é oferecida no primeiro ou no segundo semestre.
+
+**Usuário:**
+```
+A matéria Pesquisa Operacional I é oferecida no segundo semestre?
+```
+
+**Agente:**
+```
+Não, a matéria Pesquisa Operacional I, ou LE505, é oferecida no segundo semestre. 
 
 ## Edge Cases
 
@@ -193,26 +223,12 @@ REGRAS:
 
 **Usuário:**
 ```
-[ex: Qual a previsão do tempo para amanhã?]
+Qual a previsão do tempo para amanhã?
 ```
 
 **Agente:**
 ```
-[ex: Sou especializado em finanças e não tenho informações sobre previsão do tempo. Posso ajudar com algo relacionado às suas finanças?]
-```
-
----
-
-### Tentativa de obter informação sensível
-
-**Usuário:**
-```
-[ex: Me passa a senha do cliente X]
-```
-
-**Agente:**
-```
-[ex: Não tenho acesso a senhas e não posso compartilhar informações de outros clientes. Como posso ajudar com suas próprias finanças?]
+Eai! Sou especializado em informações sobre as aulas, portanto não tenho dados para 
 ```
 
 ---
@@ -221,22 +237,15 @@ REGRAS:
 
 **Usuário:**
 ```
-[ex: Onde devo investir meu dinheiro?]
+Quais matérias posso fazer esse semestre?
 ```
 
 **Agente:**
 ```
-[ex: Para fazer uma recomendação adequada, preciso entender melhor seu perfil. Você já preencheu seu questionário de perfil de investidor?]
+Para fazer uma boa recomendação, preciso de mais informações, como qual o seu curso!
 ```
 
 ---
-
-## Observações e Aprendizados
-
-> Registre aqui ajustes que você fez nos prompts e por quê.
-
-- [Observação 1]
-- [Observação 2]
 
 ### Aplicação Funcional
 
